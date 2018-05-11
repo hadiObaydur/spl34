@@ -28,7 +28,7 @@
             android:title="country and language" />
         <item
             android:id="@+id/darktheme"
-            android:title="use theme"
+            android:title="change theme"
              />
 
 

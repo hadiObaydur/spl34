@@ -20,6 +20,7 @@
         </activity>
         <activity android:name=".ListNews" />
         <activity android:name=".DetailArticle"></activity>
+        <activity android:name=".ItemCategoryList"></activity>
     </application>
 
 </manifest>

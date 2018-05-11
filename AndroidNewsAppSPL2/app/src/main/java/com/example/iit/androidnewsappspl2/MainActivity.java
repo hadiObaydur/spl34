@@ -3,14 +3,18 @@ package com.example.iit.androidnewsappspl2;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.support.design.widget.NavigationView;
+import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
+import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.view.menu.MenuView;
 import android.support.v7.widget.Toolbar;
+import android.view.Menu;
 import android.view.MenuItem;
 
 import android.widget.Toast;
@@ -61,9 +65,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         arrayList.add("topStories"); //jodi account thake taile account theke load korbe naile default theke load korbe category
         arrayList.add("entertainment");
         arrayList.add("business");
-        arrayList.add("tech");
-        arrayList.add("top");
-        arrayList.remove(4);
+        arrayList.add("sports");
+        arrayList.add("technology");
+        //arrayList.remove(4);
         for(String name : arrayList)
         {
             arr.add(name);
@@ -89,14 +93,52 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+
+        TabLayout tabLayout = (TabLayout) findViewById(R.id.tab_layout);
+        //categoryTitle=getPageTitle();
+        for (int i = 0; i < arrayList.size(); i++) {
+            tabLayout.addTab(tabLayout.newTab().setText(arrayList.get(i)));
+        }
+
+        //set gravity for tab bar
+        tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
+
+        final ViewPager viewPager = (ViewPager) findViewById(R.id.pager);
+        final PagerAdapter adapter = new PagerAdapter(getSupportFragmentManager(), tabLayout.getTabCount(),arrayList);
+        //tabLayout.setupWithViewPager(viewPager);
+        viewPager.setAdapter(adapter);
+        viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
+        tabLayout.addOnTabSelectedListener(onTabSelectedListener(viewPager));
     }
 
-    public void addCategory(String categoryName){
-        arrayList.add(categoryName);
+    private TabLayout.OnTabSelectedListener onTabSelectedListener(final ViewPager pager) {
+        return new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                pager.setCurrentItem(tab.getPosition(),true);
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+
+            }
+        };
     }
-    public void deleteCategory(String categoryName){
-        arrayList.remove(categoryName);
-    }
+
+
+
+//    public void addCategory(String categoryName){
+//        arrayList.add(categoryName);
+//    }
+//    public void deleteCategory(String categoryName){
+//        arrayList.remove(categoryName);
+//    }
 
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -115,10 +157,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         Fragment fragment = null;
         Bundle bundle = new Bundle();
         if (id == R.id.headlinesection) {
-            bundle.putStringArrayList("arraylist",arr);
-            bundle.putInt("count",arrayList.size());
-            fragment = new ItemCategoryList();
-            fragment.setArguments(bundle);
+            Intent detail = new Intent(getApplicationContext(),ItemCategoryList.class);
+            detail.putStringArrayListExtra("arrayListAll",arr);
+            detail.putExtra("count",arrayList.size());
+            detail.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            getApplicationContext().startActivity(detail);
         }
         if (id == R.id.language) {
             bundle.putStringArrayList("mArray",mArray);
@@ -128,9 +171,30 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
 
         if(id == R.id.darktheme){
-            bundle.putBoolean("useDarkTheme",useDarkTheme);
-            fragment = new ThemeFragment();
-            fragment.setArguments(bundle);
+//            bundle.putBoolean("useDarkTheme",useDarkTheme);
+//            fragment = new ThemeFragment();
+//            fragment.setArguments(bundle);
+
+
+            if(useDarkTheme==true){
+
+                item.setTitle("use dark theme");
+                useDarkTheme=false;
+            }
+            else
+            {
+                item.setTitle("use light theme");
+                useDarkTheme=true;
+            }
+
+            SharedPreferences.Editor editor =getSharedPreferences(PREFS_NAME, MODE_PRIVATE).edit();
+            editor.putBoolean(PREF_DARK_THEME, useDarkTheme);
+            editor.apply();
+
+            Intent intent = getIntent();
+            finish();
+
+            startActivity(intent);
 
         }
         if (id == R.id.fb) {
@@ -162,7 +226,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
         if (fragment != null) {
             FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-            ft.replace(R.id.pager, fragment);
+            ft.replace(R.id.content_frame, fragment);
             ft.commit();
         }
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
